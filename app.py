@@ -134,10 +134,12 @@ if detail_table.empty:
     st.write("No rides match your filter selection.")
 else:
     last_col = detail_table.columns[-1]
-    st.dataframe(detail_table
+    st.dataframe(
+        detail_table
         .sort_values(by=last_col, ascending=False)
-        .reset_index(drop=True))
-"""
+        .reset_index(drop=True)
+    )
+
 with open("app.py","w") as f:
     f.write(app_code)
 
