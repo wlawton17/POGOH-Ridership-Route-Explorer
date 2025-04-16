@@ -9,21 +9,18 @@ from io import StringIO
 st.set_page_config(page_title='POGOH Dashboard', layout='wide')
 st.title('📍 POGOH Ridership Route Explorer')
 
-
-
 @st.cache_data
 def load_data():
-    # your Box share link (dl=1 forces the download)
+    # your Box “dl=1” share link
     url = "https://cmu.box.com/s/fcgqintnvy2tp8wvkqor1jji611cyme1?dl=1"
 
-    # grab the **actual** CSV blob
-    r = requests.get(url)
-    r.raise_for_status()
-    text = r.text
+    # follow the redirect and grab the raw CSV text
+    resp = requests.get(url)
+    resp.raise_for_status()
+    text = resp.text
 
-    # now let pandas parse it safely
+    # now parse it as CSV
     df = pd.read_csv(StringIO(text))
-
     df.columns = (
         df.columns
           .str.strip()
@@ -32,8 +29,6 @@ def load_data():
           .str.replace(r'[^a-z0-9_]', '', regex=True)
     )
     return df
-
-
 df = load_data()
 
 # Sidebar filters
