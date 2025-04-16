@@ -1,15 +1,30 @@
 import streamlit as st
 import pandas as pd
+import requests, io
 
 @st.cache_data
 def load_data():
-    # Use the dl.dropboxusercontent.com domain for raw file
-    url = (
-        "https://dl.dropboxusercontent.com/"
-        "s/9rcp9278pcbugfuh53h86/prepared_ridership_data.csv"
+    # Original share link
+    share_url = "https://cmu.box.com/s/fcgqintnvy2tp8wvkqor1jji611cyme1"
+    share_id = share_url.rstrip("/").split("/")[-1]
+
+    # Box’s direct‑download endpoint
+    dl_url = (
+        "https://cmu.box.com/index.php"
+        "?rm=box_download_shared_file"
+        f"&shared_name={share_id}"
     )
-    df = pd.read_csv(url)
-    # Normalize column names
+
+    # 1) Fetch (follows redirects to the real file)
+    resp = requests.get(dl_url)
+    if resp.status_code != 200:
+        st.error(f"Failed to download CSV: HTTP {resp.status_code}")
+        st.stop()
+
+    # 2) Load into pandas
+    df = pd.read_csv(io.StringIO(resp.text))
+
+    # 3) Normalize column names (as before)
     df.columns = (
         df.columns
           .str.strip()
@@ -19,7 +34,10 @@ def load_data():
     )
     return df
 
+# Use it
 df = load_data()
+st.write("🔍 Loaded data shape:", df.shape)
+
 
 
 
