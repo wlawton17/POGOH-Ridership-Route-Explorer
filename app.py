@@ -1,9 +1,3 @@
-git lfs install
-git lfs track "prepared_ridership_data.csv"
-git add .gitattributes prepared_ridership_data.csv
-git commit -m "Add large CSV via Git LFS"
-git push
-
 import streamlit as st
 import pandas as pd
 import folium
