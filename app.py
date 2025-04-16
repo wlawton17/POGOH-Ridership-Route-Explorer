@@ -1,28 +1,23 @@
-import gdown
-import pandas as pd
 import streamlit as st
+import pandas as pd
 
 @st.cache_data
 def load_data():
-    # 1) direct‐download URL for your file
-    file_id = "1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y"  # ← make sure this matches your Drive file
-    url = f"https://drive.google.com/file/d/1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y/view?usp=drive_link"
-
-    # 2) download to local
-    output = "prepared_ridership_data.csv"
-    # fuzzy=True helps gdown pick up confirmation tokens for large files
-    gdown.download(url, output, quiet=False, fuzzy=True)
-
-    # 3) load into pandas
-    df = pd.read_csv(output)
-
-    # 4) normalize columns as before
+    # Direct‑download link to your Dropbox CSV (dl=1 forces download)
+    url = "https://www.dropbox.com/scl/fi/9rcp9278pcbugfuh53h86/prepared_ridership_data.csv?dl=1"
+    # Read it straight into pandas
+    df = pd.read_csv(url)
+    # Normalize column names
     df.columns = (
         df.columns
           .str.strip()
           .str.lower()
-          .str.replace(r'[\s\(\)\-]+','_', regex=True)
-          .str.replace(r'[^a-z0-9_]','', regex=True)
+          .str.replace(r'[\s\(\)\-]+', '_', regex=True)
+          .str.replace(r'[^a-z0-9_]', '', regex=True)
     )
     return df
+
+# Replace your old local‑file call with this
+df = load_data()
+
 
