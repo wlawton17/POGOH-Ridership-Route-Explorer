@@ -13,6 +13,7 @@ st.title('📍 POGOH Ridership Route Explorer')
 def load_data():
     import requests, re
     from io import BytesIO
+    import pandas as pd
 
     file_id = "1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y"
     URL = "https://docs.google.com/uc?export=download"
@@ -20,25 +21,33 @@ def load_data():
     session = requests.Session()
     # 1) initial request
     resp = session.get(URL, params={'id': file_id}, stream=True)
-    # 2) look for the “download_warning” cookie
+    text = resp.text
+
+    # 2) try to pull confirm token from cookie
     token = None
     for k, v in resp.cookies.items():
         if k.startswith('download_warning'):
             token = v
 
-    if token:
-        # 3) re‑request with confirm token
-        resp = session.get(
-            URL,
-            params={'id': file_id, 'confirm': token},
-            stream=True
-        )
+    # 3) if no cookie, scrape the form
+    if not token:
+        m = re.search(r'name="confirm" value="([^"]+)"', text)
+        if m:
+            token = m.group(1)
 
-    # 4) load into pandas from bytes
+    # 4) if we got a token, re‑request with confirm
+    if token:
+        resp = session.get(URL,
+                           params={'id': file_id, 'confirm': token},
+                           stream=True)
+
+    resp.raise_for_status()
     data = resp.content
+
+    # 5) parse CSV
     df = pd.read_csv(BytesIO(data))
 
-    # clean your column names as before
+    # 6) clean up columns
     df.columns = (
         df.columns
           .str.strip()
@@ -47,7 +56,8 @@ def load_data():
           .str.replace(r'[^a-z0-9_]','', regex=True)
     )
     return df
-
+# ← here, outside of the function:
+df = load_data()
 
 # … rest of your app (filters, map, table, etc.) remains unchanged.
 
