@@ -1,3 +1,9 @@
+git lfs install
+git lfs track "prepared_ridership_data.csv"
+git add .gitattributes prepared_ridership_data.csv
+git commit -m "Add large CSV via Git LFS"
+git push
+
 import streamlit as st
 import pandas as pd
 import folium
@@ -8,28 +14,6 @@ from io import StringIO
 
 st.set_page_config(page_title='POGOH Dashboard', layout='wide')
 st.title('📍 POGOH Ridership Route Explorer')
-
-@st.cache_data
-def load_data():
-    # your Box “dl=1” share link
-    url = "https://cmu.box.com/s/fcgqintnvy2tp8wvkqor1jji611cyme1?dl=1"
-
-    # follow the redirect and grab the raw CSV text
-    resp = requests.get(url)
-    resp.raise_for_status()
-    text = resp.text
-
-    # now parse it as CSV
-    df = pd.read_csv(StringIO(text))
-    df.columns = (
-        df.columns
-          .str.strip()
-          .str.lower()
-          .str.replace(r'[\s\(\)\-]+', '_', regex=True)
-          .str.replace(r'[^a-z0-9_]', '', regex=True)
-    )
-    return df
-df = load_data()
 
 # Sidebar filters
 with st.sidebar:
