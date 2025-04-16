@@ -9,11 +9,30 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 from folium.plugins import HeatMap, MarkerCluster
-import requests
-from io import StringIO
 
 st.set_page_config(page_title='POGOH Dashboard', layout='wide')
 st.title('📍 POGOH Ridership Route Explorer')
+
+@st.cache_data
+def load_data():
+    # CSV is now in your repo via LFS
+    df = pd.read_csv('prepared_ridership_data.csv')
+    df.columns = (
+        df.columns
+          .str.strip()
+          .str.lower()
+          .str.replace(r'[\s\(\)\-]+', '_', regex=True)
+          .str.replace(r'[^a-z0-9_]', '', regex=True)
+    )
+    return df
+
+df = load_data()
+
+# Sidebar filters
+with st.sidebar:
+    st.header('🔍 Filters')
+    start_station = st.selectbox('Start Station',
+        ['All'] + sorted(df['start_station_name'].dropna().unique()))
 
 # Sidebar filters
 with st.sidebar:
