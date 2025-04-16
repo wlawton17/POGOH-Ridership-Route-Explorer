@@ -22,7 +22,7 @@ def load_data():
     resp.raise_for_status()
     text = resp.text
     df = pd.read_csv(StringIO(text))
-    # 5) Clean up your column names (as before)
+
     df.columns = (
         df.columns
           .str.strip()
@@ -30,6 +30,10 @@ def load_data():
           .str.replace(r'[\s\(\)\-]+','_', regex=True)
           .str.replace(r'[^a-z0-9_]','', regex=True)
     )
+
+    # DEBUG: and after cleaning
+    st.write("🔍 Clean columns:", df.columns.tolist())
+
     return df
 
 df = load_data()
