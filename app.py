@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import requests
+from io import StringIO
 import folium
 from streamlit_folium import st_folium
 from folium.plugins import HeatMap, MarkerCluster
@@ -9,18 +11,31 @@ st.title('📍 POGOH Ridership Route Explorer')
 
 @st.cache_data
 def load_data():
-    # CSV is now in your repo via LFS
-    df = pd.read_csv('prepared_ridership_data.csv')
+    # 1) Public “anyone with link” Drive share URL:
+    share_url = "https://drive.google.com/file/d/1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y/view?usp=sharing"
+    # 2) Extract the file ID:
+    file_id = "1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y"
+    # 3) Build the direct‑download URL:
+    dl_url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    # 4) Fetch & parse as CSV
+    resp = requests.get(dl_url)
+    resp.raise_for_status()
+    text = resp.text
+    df = pd.read_csv(StringIO(text))
+    # 5) Clean up your column names (as before)
     df.columns = (
         df.columns
           .str.strip()
           .str.lower()
-          .str.replace(r'[\s\(\)\-]+', '_', regex=True)
-          .str.replace(r'[^a-z0-9_]', '', regex=True)
+          .str.replace(r'[\s\(\)\-]+','_', regex=True)
+          .str.replace(r'[^a-z0-9_]','', regex=True)
     )
     return df
 
 df = load_data()
+
+# … rest of your app (filters, map, table, etc.) remains unchanged.
+
 
 # Sidebar filters
 with st.sidebar:
