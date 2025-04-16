@@ -11,43 +11,27 @@ st.title('📍 POGOH Ridership Route Explorer')
 
 @st.cache_data
 def load_data():
-    import requests, re
-    from io import BytesIO
-    import pandas as pd
-
     file_id = "1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y"
     URL = "https://docs.google.com/uc?export=download"
-
     session = requests.Session()
-    # 1) initial request
-    resp = session.get(URL, params={'id': file_id}, stream=True)
-    text = resp.text
 
-    # 2) try to pull confirm token from cookie
+    # 1) initial request, see if Drive gives you a confirmation token
+    resp = session.get(URL, params={"id": file_id}, stream=True)
     token = None
     for k, v in resp.cookies.items():
-        if k.startswith('download_warning'):
+        if k.startswith("download_warning"):
             token = v
+            break
 
-    # 3) if no cookie, scrape the form
-    if not token:
-        m = re.search(r'name="confirm" value="([^"]+)"', text)
-        if m:
-            token = m.group(1)
-
-    # 4) if we got a token, re‑request with confirm
+    # 2) if there is a token, re‑request with confirm=token
     if token:
-        resp = session.get(URL,
-                           params={'id': file_id, 'confirm': token},
-                           stream=True)
+        resp = session.get(URL, params={"id": file_id, "confirm": token}, stream=True)
 
-    resp.raise_for_status()
-    data = resp.content
+    # 3) now resp.content is the raw CSV bytes
+    csv_bytes = resp.content
+    df = pd.read_csv(BytesIO(csv_bytes))
 
-    # 5) parse CSV
-    df = pd.read_csv(BytesIO(data))
-
-    # 6) clean up columns
+    # 4) clean your columns as before
     df.columns = (
         df.columns
           .str.strip()
@@ -56,7 +40,8 @@ def load_data():
           .str.replace(r'[^a-z0-9_]','', regex=True)
     )
     return df
-# ← here, outside of the function:
+
+# call it once at the top of your app
 df = load_data()
 
 # … rest of your app (filters, map, table, etc.) remains unchanged.
