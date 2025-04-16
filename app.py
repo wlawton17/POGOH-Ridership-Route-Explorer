@@ -11,18 +11,15 @@ st.title('📍 POGOH Ridership Route Explorer')
 
 @st.cache_data
 def load_data():
-    # 1) Public “anyone with link” Drive share URL:
-    share_url = "https://drive.google.com/file/d/1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y/view?usp=sharing"
-    # 2) Extract the file ID:
-    file_id = "1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y"
-    # 3) Build the direct‑download URL:
-    dl_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    # 4) Fetch & parse as CSV
-    resp = requests.get(dl_url)
+    # … your Drive download logic …
+    resp = requests.get("https://drive.google.com/uc?export=download&id=1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y")
     resp.raise_for_status()
-    text = resp.text
-    df = pd.read_csv(StringIO(text))
+    df = pd.read_csv(StringIO(resp.text))
 
+    # DEBUG: show me exactly what came in
+    st.write("🔍 Raw columns:", df.columns.tolist())
+
+    # clean names
     df.columns = (
         df.columns
           .str.strip()
@@ -37,6 +34,8 @@ def load_data():
     return df
 
 df = load_data()
+st.stop()  # <— pause here so you can inspect the two lists above
+
 
 # … rest of your app (filters, map, table, etc.) remains unchanged.
 
