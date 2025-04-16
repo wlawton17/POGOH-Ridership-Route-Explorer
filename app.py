@@ -11,15 +11,34 @@ st.title('📍 POGOH Ridership Route Explorer')
 
 @st.cache_data
 def load_data():
-    # … your Drive download logic …
-    resp = requests.get("https://drive.google.com/uc?export=download&id=1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y")
-    resp.raise_for_status()
-    df = pd.read_csv(StringIO(resp.text))
+    import requests, re
+    from io import BytesIO
 
-    # DEBUG: show me exactly what came in
-    st.write("🔍 Raw columns:", df.columns.tolist())
+    file_id = "1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y"
+    URL = "https://docs.google.com/uc?export=download"
 
-    # clean names
+    session = requests.Session()
+    # 1) initial request
+    resp = session.get(URL, params={'id': file_id}, stream=True)
+    # 2) look for the “download_warning” cookie
+    token = None
+    for k, v in resp.cookies.items():
+        if k.startswith('download_warning'):
+            token = v
+
+    if token:
+        # 3) re‑request with confirm token
+        resp = session.get(
+            URL,
+            params={'id': file_id, 'confirm': token},
+            stream=True
+        )
+
+    # 4) load into pandas from bytes
+    data = resp.content
+    df = pd.read_csv(BytesIO(data))
+
+    # clean your column names as before
     df.columns = (
         df.columns
           .str.strip()
@@ -27,14 +46,7 @@ def load_data():
           .str.replace(r'[\s\(\)\-]+','_', regex=True)
           .str.replace(r'[^a-z0-9_]','', regex=True)
     )
-
-    # DEBUG: and after cleaning
-    st.write("🔍 Clean columns:", df.columns.tolist())
-
     return df
-
-df = load_data()
-st.stop()  # <— pause here so you can inspect the two lists above
 
 
 # … rest of your app (filters, map, table, etc.) remains unchanged.
