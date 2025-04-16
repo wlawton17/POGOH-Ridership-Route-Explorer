@@ -3,15 +3,27 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 from folium.plugins import HeatMap, MarkerCluster
+import requests
+from io import StringIO
 
 st.set_page_config(page_title='POGOH Dashboard', layout='wide')
 st.title('📍 POGOH Ridership Route Explorer')
 
+
+
 @st.cache_data
 def load_data():
-    # this is the PUBLIC, static‐shared CSV link from Box:
-    url = "https://cmu.box.com/shared/static/fcgqintnvy2tp8wvkqor1jji611cyme1.csv"
-    df = pd.read_csv(url)
+    # your Box share link (dl=1 forces the download)
+    url = "https://cmu.box.com/s/fcgqintnvy2tp8wvkqor1jji611cyme1?dl=1"
+
+    # grab the **actual** CSV blob
+    r = requests.get(url)
+    r.raise_for_status()
+    text = r.text
+
+    # now let pandas parse it safely
+    df = pd.read_csv(StringIO(text))
+
     df.columns = (
         df.columns
           .str.strip()
@@ -20,6 +32,7 @@ def load_data():
           .str.replace(r'[^a-z0-9_]', '', regex=True)
     )
     return df
+
 
 df = load_data()
 
