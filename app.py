@@ -9,7 +9,8 @@ st.title('📍 POGOH Ridership Route Explorer')
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv('prepared_ridership_data.csv')
+    url = "https://drive.google.com/file/d/1InKv_47z8tVBmqT8TBbv4xfAukGwHl2y/view?usp=drive_link"
+    df = pd.read_csv(url)
     df.columns = (
         df.columns
           .str.strip()
