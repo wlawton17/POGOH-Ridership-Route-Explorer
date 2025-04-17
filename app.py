@@ -18,7 +18,7 @@ def load_data():
     # 1) initial request — might get a warning page
     r = session.get(URL, params={"id": file_id}, stream=True)
 
-    # 2) look for the “download_warning” cookie
+    # 2) look for the "download_warning" cookie
     token = next((v for k, v in r.cookies.items() if k.startswith("download_warning")), None)
 
     # 3) if there is a token, re‑request with confirm=token
@@ -148,10 +148,3 @@ else:
         .sort_values(by=last_col, ascending=False)
         .reset_index(drop=True)
     )
-
-with open("app.py","w") as f:
-    f.write(app_code)
-
-
-
-
